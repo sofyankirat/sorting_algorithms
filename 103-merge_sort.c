@@ -1,87 +1,86 @@
 #include "sort.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 /**
- * merge_sort - the merge sort algorithm's interface
- * @array: array of integers to be sorted
- * @size: size of the array
- *
- * Return: void
- */
+* TDMerge - sorts and merges the sub arrays
+* @start: starting index
+* @middle: end index
+* @end: end index
+* @dest: destination for the data
+* @source: source of the data
+*
+* Return: void
+*/
+void TDMerge(size_t start, size_t middle, size_t end, int *dest, int *source)
+{
+	size_t i, j, k;
+
+	printf("Merging...\n");
+	printf("[left]: ");
+	print_array(source + start, middle - start);
+	printf("[right]: ");
+	print_array(source + middle, end - middle);
+	i = start;
+	j = middle;
+	for (k = start; k < end; k++)
+	{
+		if (i < middle && (j >= end || source[i] <= source[j]))
+		{
+			dest[k] = source[i];
+			i++;
+		}
+		else
+		{
+			dest[k] = source[j];
+			j++;
+		}
+	}
+	printf("[Done]: ");
+	print_array(dest + start, end - start);
+}
+
+/**
+* TDSplitMerge - recursively splits the array, merge and sort
+* @start: starting index (inclusive)
+* @end: end index (exclusive)
+* @array: the array to sort
+* @clone: a clone of the array
+*/
+void TDSplitMerge(size_t start, size_t end, int *array, int *clone)
+{
+	size_t middle;
+
+	if (end - start < 2)
+		return;
+	middle = (start + end) / 2;
+	TDSplitMerge(start, middle, array, clone);
+	TDSplitMerge(middle, end, array, clone);
+	TDMerge(start, middle, end, array, clone);
+	for (middle = start; middle < end; middle++)
+		clone[middle] = array[middle];
+}
+
+/**
+* merge_sort - sorts an array of integers
+* Merge sort algorithm
+* @array: array to sort
+* @size: size of the array
+*
+* Return: void
+*/
 void merge_sort(int *array, size_t size)
 {
-	int *temp; /* temporaray array for staging */
+	size_t i;
+	int *clone;
 
-	temp = malloc(sizeof(int) * size);
-	if (temp == NULL || array == NULL || size < 2)
+	if (array == NULL || size < 2)
 		return;
-
-	mergesrt(array, 0, size, temp);
-	free(temp);
-}
-
-/**
- * mergesrt - the merge sort algorithm implementation
- * @A: array of integers to be sorted
- * @left: the start of the array at current state,
- * the position of the first element itself
- * @right: the end of the array at current state,
- * the position of the last element itself
- * @temp: temporary array
- *
- * Return: void
- */
-void mergesrt(int A[], int left, int right, int *temp)
-{
-	int mid;
-
-	if (right - left > 1)
-	{
-		mid = left + (right - left) / 2;
-		/* above avoids integer overflow for large integers */
-		mergesrt(A, left, mid, temp);
-		mergesrt(A, mid, right, temp);
-		merge(A, left, mid, right, temp);
-	}
-}
-
-/**
- * merge - the merger function for mergesrt
- * @A: array of integers to be sorted
- * @left: the start of the array at current state,
- * the position of the first element itself
- * @right: the end of the array at current state,
- * the position of the last element itself
- * @mid: the middle of the current array,
- * size of the left array is less than or equal to that of the right array
- * @temp: temporary array
- *
- * Return: void
- */
-void merge(int A[], int left, int mid, int right, int *temp)
-{
-	int i = left; /* counter for - left array*/
-	int j = mid;  /* counter for - right array*/
-	int k = 0;    /* counter for temp array */
-
-	printf("Merging...\n[left]: ");
-	print_array(A + left, mid - left);
-	printf("[right]: ");
-	print_array(A + mid, right - mid);
-	/* copy from both left and rigth arrays but in a sorted manner */
-	while (i < mid && j < right)
-		temp[k++] = (A[i] < A[j]) ? A[i++] : A[j++];
-
-	/* copy left-overs of left array if any */
-	while (i < mid)
-		temp[k++] = A[i++];
-
-	/* copy left-overs of right array if any */
-	while (j < right)
-		temp[k++] = A[j++];
-
-	/* move sorted data from the staging area to the main array */
-	for (k = 0, i = left; i < right;)
-		A[i++] = temp[k++];
-	printf("[Done]: ");
-	print_array(A + left, right - left);
+	clone = malloc(sizeof(int) * size);
+	if (clone == NULL)
+		return;
+	for (i = 0; i < size; i++)
+		clone[i] = array[i];
+	TDSplitMerge(0, size, array, clone);
+	free(clone);
 }
